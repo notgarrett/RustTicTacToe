@@ -58,7 +58,7 @@ impl TicTacToe {
     }
 
     pub fn play(&mut self, pos: usize) -> Result<GameStates, GameError> {
-        if self.moves == 9 {
+        if self.state != GameStates::Ongoing {
             return Err(GameError::GameOver);
         }
 
@@ -75,14 +75,14 @@ impl TicTacToe {
             CurrentTurn::Player2 => CellStates::Player2,
         };
 
+        self.moves += 1;
+
         let state = self.eval();
 
         self.turn = match self.turn {
             CurrentTurn::Player1 => CurrentTurn::Player2,
             _ => CurrentTurn::Player1,
         };
-
-        self.moves += 1;
 
         Ok(state)
     }
@@ -110,13 +110,13 @@ impl TicTacToe {
     }
 
     fn eval(&mut self) -> GameStates {
-        if self.moves == 9 {
-            self.state = GameStates::Draw
-        } else if self.check_win() {
+        if self.check_win() {
             match self.turn {
                 CurrentTurn::Player1 => self.state = GameStates::Player1Win,
                 _ => self.state = GameStates::Player2Win,
             }
+        } else if self.moves == 9 {
+            self.state = GameStates::Draw
         }
         self.state
     }
@@ -125,9 +125,10 @@ impl TicTacToe {
         self.check_vertical_wins() || self.check_diagonal_wins() || self.check_horizontal_wins()
     }
 
-    fn check_vertical_wins(&self) -> bool {
+    fn check_horizontal_wins(&self) -> bool {
         for i in 0..WIDTH as usize {
-            if self.board[0 + 3 * i] == self.board[1 + 3 * i]
+            if self.board[0 + 3 * i] != CellStates::Empty
+                && self.board[0 + 3 * i] == self.board[1 + 3 * i]
                 && self.board[1 + 3 * i] == self.board[2 + 3 * i]
             {
                 return true;
@@ -136,9 +137,12 @@ impl TicTacToe {
         false
     }
 
-    fn check_horizontal_wins(&self) -> bool {
+    fn check_vertical_wins(&self) -> bool {
         for i in 0..HEIGHT as usize {
-            if self.board[0 + i] == self.board[3 + i] && self.board[3 + i] == self.board[6 + i] {
+            if self.board[0 + i] != CellStates::Empty
+                && self.board[0 + i] == self.board[3 + i]
+                && self.board[3 + i] == self.board[6 + i]
+            {
                 return true;
             }
         }
@@ -146,8 +150,12 @@ impl TicTacToe {
     }
 
     fn check_diagonal_wins(&self) -> bool {
-        self.board[0] == self.board[4] && self.board[4] == self.board[8]
-            || self.board[2] == self.board[4] && self.board[4] == self.board[6]
+        (self.board[0] != CellStates::Empty
+            && self.board[0] == self.board[4]
+            && self.board[4] == self.board[8])
+            || (self.board[2] != CellStates::Empty
+                && self.board[2] == self.board[4]
+                && self.board[4] == self.board[6])
     }
 }
 
@@ -168,6 +176,15 @@ mod tests {
 
         let mut game_3 = TicTacToe::from("3847");
         assert_eq!(game_3.play(5).unwrap(), GameStates::Player1Win);
+    }
+
+    #[test]
+    fn check_ungoing_state() {
+        let mut game = TicTacToe::new();
+        assert_eq!(game.play(4).unwrap(), GameStates::Ongoing);
+        assert_eq!(game.play(8).unwrap(), GameStates::Ongoing);
+        assert_eq!(game.play(5).unwrap(), GameStates::Ongoing);
+        assert_eq!(game.play(6).unwrap(), GameStates::Ongoing);
     }
 
     #[test]
@@ -192,9 +209,13 @@ mod tests {
         assert_eq!(game_2.play(6).unwrap(), GameStates::Player1Win);
     }
 
+    // 0 1 2
+    // 3 4 5
+    // 6 7 8
+
     #[test]
     fn test_overflow() {
-        let mut game = TicTacToe::from("012345678");
+        let mut game = TicTacToe::from("048536217");
         assert_eq!(game.play(2).expect_err(""), GameError::GameOver)
     }
 

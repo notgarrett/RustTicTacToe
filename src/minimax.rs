@@ -1,12 +1,19 @@
-use crate::tictactoe::{self, GameStates, TicTacToe};
+use crate::tictactoe::{GameStates, TicTacToe};
 
 fn minimax(position: &TicTacToe) -> usize {
     let (mut to_play, mut max) = (0 as usize, -8);
+
+    for i in 0..9 {
+        if position.can_play(i) && position.check_winning_move(i) {
+            return i;
+        }
+    }
+
     for i in 0..9 {
         if position.can_play(i) {
             let mut clone = *position;
             clone.play(i).unwrap();
-            let score = -minimax_helper(&clone);
+            let score = -minimax_helper(&clone, -10000000, 10000000);
             if score > max {
                 max = score;
                 to_play = i;
@@ -17,7 +24,7 @@ fn minimax(position: &TicTacToe) -> usize {
     to_play
 }
 
-fn minimax_helper(position: &TicTacToe) -> i32 {
+fn minimax_helper(position: &TicTacToe, mut alpha: i32, mut beta: i32) -> i32 {
     // Check winning position
 
     if position.state() != GameStates::Ongoing {
@@ -26,11 +33,17 @@ fn minimax_helper(position: &TicTacToe) -> i32 {
 
     for i in 0..9 {
         if position.can_play(i) && position.check_winning_move(i) {
-            return (10 - position.moves() as i32) / 2;
+            return 10 - position.moves() as i32;
         }
     }
 
-    let mut max = -8;
+    let max = (8 - position.moves() as i32) / 2;
+    if beta > max {
+        beta = max;
+        if alpha >= beta {
+            return beta;
+        }
+    }
 
     // Begin simulating positions
 
@@ -38,13 +51,15 @@ fn minimax_helper(position: &TicTacToe) -> i32 {
         if position.can_play(i) {
             let mut clone = *position;
             clone.play(i).unwrap();
-            let score = -minimax_helper(&clone);
-            if score > max {
-                max = score;
+            let score = -minimax_helper(&clone, -beta, -alpha);
+            if score >= beta {
+                return beta;
+            } else if score > alpha {
+                alpha = score;
             }
         }
     }
-    max
+    alpha
 }
 
 // 0 1 2
