@@ -13,8 +13,8 @@ enum CellStates {
     Empty,
 }
 
-#[derive(Clone, Copy)]
-enum CurrentTurn {
+#[derive(Clone, Copy, PartialEq)]
+pub enum CurrentTurn {
     Player1,
     Player2,
 }
@@ -26,7 +26,7 @@ pub enum GameError {
     GameOver,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub struct TicTacToe {
     board: [CellStates; 9],
     turn: CurrentTurn,
@@ -85,6 +85,10 @@ impl TicTacToe {
         };
 
         Ok(state)
+    }
+
+    pub fn turn(&self) -> CurrentTurn {
+        self.turn
     }
 
     pub fn check_winning_move(&self, pos: usize) -> bool {
