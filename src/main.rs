@@ -34,7 +34,8 @@ fn main() -> io::Result<()> {
                     if board.state() != GameStates::Ongoing {
                         break;
                     }
-                    board.play(iterative_deepening(&board)).unwrap();
+                    board.play(minimax(&board)).unwrap();
+                    break;
                 }
             }
         }
