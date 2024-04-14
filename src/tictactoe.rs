@@ -161,6 +161,21 @@ impl TicTacToe {
                 && self.board[2] == self.board[4]
                 && self.board[4] == self.board[6])
     }
+
+    pub fn print_board(&self) {
+        let mut count = 1;
+        for i in self.board {
+            match i {
+                CellStates::Empty => print!("|  |"),
+                CellStates::Player1 => print!("| x |"),
+                CellStates::Player2 => print!("| o |"),
+            };
+            if count % 3 == 0 {
+                println!();
+            }
+            count += 1;
+        }
+    }
 }
 
 // 0 1 2

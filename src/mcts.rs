@@ -1,4 +1,4 @@
-// is this thing going to have to be a class?
+// Wasnt able to get MCTS working.
 
 use crate::tictactoe::{CurrentTurn, GameError, GameStates, TicTacToe};
 use rand::Rng;
@@ -52,7 +52,7 @@ impl MctsNode {
         };
         self.visits += 1;
         let mut child = MctsNode::new(clone, self.turn);
-        child.set_parent(Box::new(self));
+        // child.set_parent(self);
 
         self.add_child(MctsNode::new(clone, self.turn));
 
@@ -61,31 +61,6 @@ impl MctsNode {
 
     pub fn generate_tree(&mut self) {
         // Check if we have to do a rollout.
-
-        for i in &mut self.children {
-            if i.visits != 0 {
-                break;
-            }
-
-            if i == self.children.last().unwrap() {
-                let result = i.rollout();
-                match result {
-                    GameStates::Player1Win => {
-                        if self.state.turn() == CurrentTurn::Player1 {
-                            i.propegate_wins();
-                            return;
-                        };
-                    }
-                    GameStates::Player2Win => {
-                        if self.state.turn() == CurrentTurn::Player2 {
-                            i.propegate_wins();
-                            return;
-                        }
-                    }
-                    _ => {}
-                }
-            }
-        }
     }
 
     pub fn rollout(&mut self) -> GameStates {

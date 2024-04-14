@@ -1,8 +1,10 @@
 use crate::tictactoe::{GameStates, TicTacToe};
 
-fn minimax(position: &TicTacToe) -> usize {
+pub fn minimax(position: &TicTacToe) -> usize {
+    // Set up 2 variables, the move to play and the lower bound of the score.
     let (mut to_play, mut max) = (0 as usize, -8);
 
+    // Evaluates any immediate winning moves and if so returns it immediatly.
     for i in 0..9 {
         if position.can_play(i) && position.check_winning_move(i) {
             return i;
@@ -37,7 +39,7 @@ fn minimax_helper(position: &TicTacToe, mut alpha: i32, mut beta: i32) -> i32 {
         }
     }
 
-    let max = (8 - position.moves() as i32) / 2;
+    let max = 8 - position.moves() as i32;
     if beta > max {
         beta = max;
         if alpha >= beta {
@@ -51,6 +53,11 @@ fn minimax_helper(position: &TicTacToe, mut alpha: i32, mut beta: i32) -> i32 {
         if position.can_play(i) {
             let mut clone = *position;
             clone.play(i).unwrap();
+
+            // Here we negate minimax and swap the alpha and beta. This simulates maximizing the
+            // next players turn, and than grabbing the inverse of that value. This returns the
+            // same result as if we were using a minimizing function.
+
             let score = -minimax_helper(&clone, -beta, -alpha);
             if score >= beta {
                 return beta;
